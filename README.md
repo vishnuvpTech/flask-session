@@ -66,52 +66,117 @@ $ flask run
 
 ### 🔹 Web Application Structure
 ```
-flask_web_app/
-│
-├── app.py
-├── requirements.txt
-├── static/
-│   ├── css/
-│   ├── js/
-│   └── images/
-├── templates/
-│   ├── index.html
-│   └── layout.html
-└── instance/
-    └── config.py
+myflaskapp/
+  ├── app/
+  │   ├── __init__.py
+  │   ├── config.py
+  │   ├── extensions.py
+  │   ├── models.py
+  │   ├── auth/                       # blueprint: authentication
+  │   │   ├── __init__.py
+  │   │   ├── routes.py
+  │   │   ├── forms.py
+  │   │   └── templates/auth/
+  │   │       └── login.html
+  │   ├── main/                       # blueprint: app main pages / api
+  │   │   ├── __init__.py
+  │   │   ├── routes.py
+  │   │   └── templates/main/
+  │   ├── api/                        # optional: REST API blueprint
+  │   │   ├── __init__.py
+  │   │   └── routes.py
+  │   ├── templates/
+  │   │   ├── base.html
+  │   │   └── 404.html
+  │   ├── static/
+  │   │   ├── css/
+  │   │   ├── js/
+  │   │   └── images/
+  │   └── tasks.py                    # optional celery tasks
+  ├── migrations/                     # Alembic/Flask-Migrate files (gitignored)
+  ├── tests/
+  │   ├── conftest.py
+  │   ├── test_basic.py
+  │   └── ...
+  ├── .env
+  ├── .flaskenv
+  ├── Dockerfile
+  ├── docker-compose.yml
+  ├── requirements.txt
+  ├── manage.py                        # cli entry (migrate, shell)
+  ├── wsgi.py                          # production entrypoint for gunicorn
+  ├── README.md
+  └── .gitignore
+
 ```
 **Highlights:**
-- `templates/` for HTML files (Jinja2)
-- `static/` for CSS, JS, images
-- `app.py` is the entry point
-- `instance/config.py` for environment-specific configuration
+- `app/` contains application package (blueprints keep code modular).
+- `extensions.py` centralizes objects like db, login_manager, migrate, mail.
+- `config.py` holds environment-specific configuration classes.
+- `manage.py` or `wsgi.py` used for running and deployment.
+- `migrations/` created by Flask-Migrate (Alembic).
+- `tests/` for unit/integration tests with pytest.
+- `Dockerfile/` & `docker-compose.yml` for containerized deployment.
 
 ---
 
 ### 🔹 REST API Application Structure
 ```
 flask_api_app/
-│
-├── app.py
-├── requirements.txt
-├── config.py
-├── controllers/
-│   ├── user_controller.py
-│   └── product_controller.py
-├── models/
-│   ├── user.py
-│   └── product.py
-├── services/
-│   ├── user_service.py
-│   └── product_service.py
-└── utils/
-    └── helpers.py
+  ├── app/
+  │   ├── __init__.py
+  │   ├── config.py
+  │   ├── extensions.py
+  │   ├── models/
+  │   │   ├── __init__.py
+  │   │   └── user.py
+  │   ├── api/
+  │   │   ├── __init__.py
+  │   │   ├── v1/
+  │   │   │   ├── __init__.py
+  │   │   │   ├── routes.py
+  │   │   │   ├── schemas.py    # marshmallow / pydantic validation
+  │   │   │   └── controllers/  # business logic
+  │   │   │       ├── __init__.py
+  │   │   │       └── user_controller.py
+  │   ├── services/
+  │   │   └── user_service.py
+  │   ├── utils/
+  │   │   ├── helpers.py
+  │   │   └── exceptions.py
+  │   ├── middlewares/
+  │   │   └── auth_middleware.py
+  │   └── tasks/
+  │       └── celery_tasks.py
+  ├── migrations/
+  ├── tests/
+  │   ├── test_user.py
+  │   ├── conftest.py
+  │   └── ...
+  ├── requirements.txt
+  ├── manage.py
+  ├── wsgi.py
+  ├── .env
+  ├── docker-compose.yml
+  ├── Dockerfile
+  └── README.md
+
 ```
 **Highlights:**
-- `controllers/` contains routes (API endpoints)
-- `models/` for data structures / ORM models
-- `services/` for business logic
-- `utils/` for reusable helpers
+- `api/`	API versions & route handlers
+- `api/v1/routes.py`	All endpoints of API v1
+- `api/v1/schemas.py`	Marshmallow/Pydantic validation
+- `api/v1/controllers/`	Business logic for routes
+- `models/`	SQLAlchemy models
+- `services/`	Complex logic (DB ops, external API calls)
+- `utils/`	Helper functions and custom exceptions
+- `middlewares/`	Auth, Rate limit, etc.
+- `extensions.py`	Initialize db, migrate, jwt, cache, etc.
+- `config.py`	Config classes (dev, prod)
+- `manage.py`	Run commands (flask db migrate etc.)
+- `wsgi.py`	Gunicorn entrypoint
+- `migrations/`	Alembic migrations
+- `tests/`	Unit tests using pytest
 - Clean layering → scalable API design
 
 ---
